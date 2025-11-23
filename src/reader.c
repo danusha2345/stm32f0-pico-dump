@@ -47,7 +47,9 @@ swdStatus_t extractFlashData(uint32_t const address, uint32_t* const data) {
 
         if (dbgStatus == swdStatusOk) {
             targetRestore();
+            /* Держим NRST высоко чуть дольше, чтобы было видно на анализаторе и ядро успело стартовать */
             delay(delayJitter);
+            delayMicroseconds(500);
 
             /* The magic happens here! */
             dbgStatus = swdReadAHBAddr((address & 0xFFFFFFFCu), &extractedData);

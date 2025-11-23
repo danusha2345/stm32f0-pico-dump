@@ -44,7 +44,8 @@
 /* minimum wait time between reset deassert and attack */
 /* With my test devices this works as 0. Obermaier's default is 20 */
 // #define DELAY_JITTER_MS_MIN (20u)
-#define DELAY_JITTER_MS_MIN (0)
+/* 2 ms минимум, чтобы на NRST был видимый импульс и чип успел проснуться */
+#define DELAY_JITTER_MS_MIN (2u)
 /* increment per failed attack */
 #define DELAY_JITTER_MS_INCREMENT (1u)
 /* maximum wait time between reset deassert and attack */
