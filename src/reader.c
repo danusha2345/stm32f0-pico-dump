@@ -28,8 +28,10 @@ swdStatus_t extractFlashData(uint32_t const address, uint32_t* const data) {
         digitalWrite(LED1_Pin, LOW);
 
         targetPowerOn();
+        targetRestore(); /* release reset before SWD init */
 
         delay(POWER_ON_DELAY_MS);
+        delay(RESET_RELEASE_MS);
 
         dbgStatus = swdInit(&idCode);
 
@@ -46,8 +48,7 @@ swdStatus_t extractFlashData(uint32_t const address, uint32_t* const data) {
         }
 
         if (dbgStatus == swdStatusOk) {
-            targetRestore();
-            /* Держим NRST высоко чуть дольше, чтобы было видно на анализаторе и ядро успело стартовать */
+            /* NRST уже high, держим его и ждём окно гонки */
             delay(delayJitter);
             delayMicroseconds(500);
 
@@ -55,7 +56,7 @@ swdStatus_t extractFlashData(uint32_t const address, uint32_t* const data) {
             dbgStatus = swdReadAHBAddr((address & 0xFFFFFFFCu), &extractedData);
         }
 
-        targetReset();
+        targetReset(); /* pull NRST low before power off */
 
         /* Check whether readout was successful. Only if swdStatusOK is returned, extractedData is valid */
         if (dbgStatus == swdStatusOk) {
@@ -71,12 +72,7 @@ swdStatus_t extractFlashData(uint32_t const address, uint32_t* const data) {
         }
 
         targetPowerOff();
-
-        delay(1);
-        targetRestore();
         delay(2);
-        targetReset();
-        delay(1);
 
     } while ((dbgStatus != swdStatusOk) && (numReadAttempts < (MAX_READ_ATTEMPTS)));
 

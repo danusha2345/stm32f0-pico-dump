@@ -25,7 +25,8 @@
 #define NRST_DEBUG_HIGH_MS 40
 #define NRST_DEBUG_LOW_MS 40
 
-#define POWER_ON_DELAY_MS 20u   /* стабилизация питания цели перед SWD init */
+#define POWER_ON_DELAY_MS 30u    /* стабилизация питания цели перед SWD init */
+#define RESET_RELEASE_MS 3u      /* пауза после поднятия NRST перед SWD init */
 
 /* On-board addressable LED (RP2040-Tiny / WS2812) */
 #define NEOPIXEL_PIN        16
