@@ -97,9 +97,6 @@ void setup() {
     Serial.printf("Flash size set statically: %lu bytes\r\n", (unsigned long)flashSizeBytes);
 #endif
 
-    /* после инициализации возвращаемся в нейтральное состояние */
-    ledOff();
-
     unsigned long startWait = millis();
     while (!Serial.available()) {
         if ((START_TIMEOUT_MS > 0u) && (millis() - startWait >= START_TIMEOUT_MS)) {
