@@ -50,14 +50,16 @@ pio run
 #define SWDIO_Pin 14
 #define SWCLK_Pin 15
 
-#define FLASH_SIZE_BYTES (32u * 1024u)   // объём флеш цели
-#define FLASH_START_ADDR (0x08000000u)   // базовый адрес флеш
-#define START_TIMEOUT_MS (5000u)         // 0 = ждать ввода бесконечно
+#define FLASH_SIZE_BYTES   (32u * 1024u)   // базовый fallback объём флеш
+#define FLASH_START_ADDR   (0x08000000u)   // базовый адрес флеш
+#define FLASH_SIZE_AUTODETECT (1u)         // 1 = попытка прочитать регистр размера
+#define FLASH_SIZE_REG_ADDR  (0x1FFFF7CCu) // адрес регистра размера (STM32F0)
+#define START_TIMEOUT_MS   (5000u)         // 0 = ждать ввода бесконечно
 ```
 
 Pico должно полностью отключать питание цели по `TARGET_PWR_Pin`. Если плата — голый STM32 или с минимальной обвязкой, можно подавать 3.3 В прямо с Pico (учтите небольшой допустимый ток). Если сомневаетесь — ставьте реле/мосфет на питание цели.
 
-Если объём флеш STM32 отличается от 32 КБ, поменяйте `FLASH_SIZE_BYTES` в [include/main.h](include/main.h). Для другой стартовой адресации правьте `FLASH_START_ADDR`.
+По умолчанию код сам читает регистр размера флеш (`FLASH_SIZE_REG_ADDR = 0x1FFFF7CC`, для STM32F0 он содержит объём в КБ) и использует его. Если автодетект не нужен/у вас другая линейка — выключите `FLASH_SIZE_AUTODETECT` и задайте `FLASH_SIZE_BYTES`/`FLASH_START_ADDR` вручную.
 
 После подачи питания Pico будет слать по UART строку `Send anything to start...` — значит, готово. Отправьте любой байт и увидите дамп:
 

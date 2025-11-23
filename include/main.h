@@ -23,8 +23,12 @@
 #define MAX_READ_ATTEMPTS (100u)
 
 /* Flash layout (change to match your target) */
-#define FLASH_SIZE_BYTES (32u * 1024u)   /* default 32 KB for STM32F0x */
+#define FLASH_SIZE_BYTES (32u * 1024u)    /* default 32 KB for STM32F0x */
 #define FLASH_START_ADDR (0x08000000u)    /* start of flash */
+
+/* Try to auto-detect flash size once before the attack (STM32F0: 0x1FFFF7CC holds size in KB). */
+#define FLASH_SIZE_AUTODETECT (1u)
+#define FLASH_SIZE_REG_ADDR   (0x1FFFF7CCu)
 
 /* Auto-start timeout for the dump after power-up.
  * 0 -> wait forever for a key on the serial port.

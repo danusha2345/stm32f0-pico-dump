@@ -14,6 +14,37 @@ extern "C" {
     #include "reader.h"
 }
 
+/* One-shot SWD read with power-cycle; used to probe registers before the main loop */
+static bool tryReadOnce(uint32_t const address, uint32_t* const data) {
+    swdStatus_t dbgStatus = swdStatusNone;
+    uint32_t idCode = 0u;
+
+    targetPowerOn();
+    delay(5);
+
+    dbgStatus = swdInit(&idCode);
+    if (dbgStatus == swdStatusOk) {
+        dbgStatus = swdEnableDebugIF();
+    }
+    if (dbgStatus == swdStatusOk) {
+        dbgStatus = swdSetAP32BitMode(NULL);
+    }
+    if (dbgStatus == swdStatusOk) {
+        dbgStatus = swdSelectAHBAP();
+    }
+    if (dbgStatus == swdStatusOk) {
+        targetRestore();
+        delay(1);
+        dbgStatus = swdReadAHBAddr((address & 0xFFFFFFFCu), data);
+    }
+
+    targetReset();
+    targetPowerOff();
+    delay(2);
+
+    return (dbgStatus == swdStatusOk);
+}
+
 void setup() {
     swdStatus_t status;
     Serial.begin(115200);
@@ -25,6 +56,24 @@ void setup() {
 
     targetInit();
     digitalWrite(LED1_Pin, HIGH);
+
+    uint32_t flashSizeBytes = FLASH_SIZE_BYTES;
+#if FLASH_SIZE_AUTODETECT
+    uint32_t flashSizeReg = 0u;
+    if (tryReadOnce(FLASH_SIZE_REG_ADDR, &flashSizeReg)) {
+        uint16_t sizeKB = (uint16_t)(flashSizeReg & 0xFFFFu);
+        if (sizeKB != 0u) {
+            flashSizeBytes = (uint32_t)sizeKB * 1024u;
+            Serial.printf("Detected flash size: %u KB\r\n", sizeKB);
+        } else {
+            Serial.println("Flash size autodetect returned 0, fallback to default");
+        }
+    } else {
+        Serial.println("Flash size autodetect failed, using default");
+    }
+#else
+    Serial.printf("Flash size set statically: %lu bytes\r\n", (unsigned long)flashSizeBytes);
+#endif
 
     unsigned long startWait = millis();
     while (!Serial.available()) {
@@ -42,7 +91,7 @@ void setup() {
     Serial.println("Starting");
 
     uint32_t flashData = 0;
-    for (uint32_t i = 0; i < FLASH_SIZE_BYTES; i+=4) {
+    for (uint32_t i = 0; i < flashSizeBytes; i+=4) {
         flashData = 0;
         status = extractFlashData(FLASH_START_ADDR + i, &flashData);
         if (status != swdStatusOk) {
