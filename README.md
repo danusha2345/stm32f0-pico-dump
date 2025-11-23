@@ -1,34 +1,34 @@
-# STM32F0x Protected Firmware Reader with Pi Pico
+# Чтение защищённой прошивки STM32F0x с помощью Pi Pico
 
-This is a proof of concept protected firmware extractor which uses a bus race-condition in SWD readouts. For exploiting it you need to avoid "talking too much" with the MCU (like the SWD Probes do) and just get direct to the point. Then it's possible to extract a single 32 bit DWORD from the firmware before the protection mechanism triggers. The proof of concept needs to control both reset and power for the target device, since the read out protection on SWD requires a power-cycle to be reset.
+Небольшой PoC, который извлекает 32‑битные слова из защищённой флеш STM32F0x через гонку на шине SWD. Суть: не «болтать» с МК, а сразу после сброса выполнить минимальный набор команд SWD — успевает прочитаться одно слово до срабатывания защиты. Для атаки надо уметь управлять и питанием, и линией reset цели, потому что сброс защиты чтения SWD происходит только после полного обесточивания.
 
-There are several PoC over the internet for this debug mode exploit, but most of them use STM32 with the MBED SDK which makes necessary a ton of stuff to compile. I like simple stuff so I choose platform.io which makes everything to you. I also ported over Raspberry Pi Pico (RP2040) which is more accessible nowadays.
+В сети есть другие PoC этого эксплойта debug‑режима, но чаще они завязаны на STM32 с MBED SDK и большим стеком зависимостей. Здесь всё сделано на PlatformIO и портировано на Raspberry Pi Pico (RP2040), чтобы собрать «из коробки».
 
-This will **only** work for Level 1 Readout Protection, since it requires SWD active and Level 2 Readout Protection totally blocks it. It might work with other STM32 variants but haven't been tested (if you test a different series than STM32F0x let me know!)
+Работает **только** при защите чтения уровня 1 (RDP Level 1): SWD активен, но после первого обращения защита срабатывает. Уровень 2 полностью блокирует SWD, поэтому этот метод не подходит. С другими линейками STM32 может заработать, но не проверялось (буду рад отчётам).
 
-# Building it
+# Сборка
 
-For building it you need platform.io installed:
+Установите PlatformIO:
 
 ```bash
 pip install platformio
 ```
 
-Or check it out specifics for different platforms at https://platformio.org/
+Или смотрите инструкции под вашу платформу на https://platformio.org/
 
-To build you just run:
+Собрать прошивку:
 
 ```bash
 pio run
 ```
 
-The firmware will be at `.pio/pico/firmware.uf2`.
+Готовый UF2 будет в `.pio/pico/firmware.uf2`.
 
-You can also use platform.io vscode plugin which allows you do to everything in a GUI environment.
+Можно пользоваться и плагином PlatformIO для VS Code.
 
-# Usage
+# Использование
 
-The pinouts are defined at [include/main.h](include/main.h) by default as:
+Назначение пинов в [include/main.h](include/main.h):
 
 ```c
 #define TARGET_RESET_Pin 27
@@ -37,11 +37,11 @@ The pinouts are defined at [include/main.h](include/main.h) by default as:
 #define SWCLK_Pin 15
 ```
 
-The pico should be able to completely turn off the device by using the `TARGET_PWR_Pin`, if your target board is just the STM32 or it has few stuff on it, you can just use the `TARGET_PWR_Pin` directly as 3.3V power supply for the board. Keep in mind that the current sink of the pico is very low, but should be enough for the attack. If you're unsure, you can use a relay/mosfet to power on/off the target power supply.
+Pico должно полностью отключать питание цели по `TARGET_PWR_Pin`. Если плата — голый STM32 или с минимальной обвязкой, можно подавать 3.3 В прямо с Pico (учтите небольшой допустимый ток). Если сомневаетесь — ставьте реле/мосфет на питание цели.
 
-If your STM32 target has different than 32KB flash memory, you should also edit in [main.cpp](src/main.cpp) the parameter `size`.
+Если объём флеш памяти STM32 отличается от 32 КБ, поправьте параметр `size` в [main.cpp](src/main.cpp). При другой стартовой адресации измените `flashAddress`.
 
-After powering everything up, the pico will repeat the message `Send anything to start...` on the serial port, that means it is ready. Press up any key and it will start dumping the content:
+После подачи питания Pico будет слать по UART строку `Send anything to start...` — значит, готово. Отправьте любой байт и увидите дамп:
 
 ```
 Send anything to start...
@@ -55,8 +55,8 @@ Starting
 0x08000018: deadbeef
 ```
 
-You can also use the `dump.py` script to dump to a file.
+Чтобы сохранить в файл, используйте скрипт `dump.py`.
 
-# Disclaimer
+# Отказ от ответственности
 
-This work is heavily based on Johanes Obermaier paper [Shedding too much Light on a Microcontroller's Firmware Protection](https://www.aisec.fraunhofer.de/en/FirmwareProtection.html). I also used portions of its Proof of Concept to migrate this to a Raspberry Pi Pico and Platform.IO so I released in the same license as  the original PoC: MIT.
+Код основан на статье Йоханнеса Обермайера [Shedding too much Light on a Microcontroller's Firmware Protection](https://www.aisec.fraunhofer.de/en/FirmwareProtection.html). Часть его PoC перенесена на Raspberry Pi Pico и PlatformIO, поэтому распространяется под той же лицензией MIT.
