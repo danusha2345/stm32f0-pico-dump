@@ -75,7 +75,7 @@ void setup() {
     targetInit();
     digitalWrite(LED1_Pin, HIGH);
     ledYellow(); /* init */
-    delay(300);  /* держим жёлтый чуть дольше */
+    delay(150);  /* короткая пауза на инициализации */
 
     uint32_t flashSizeBytes = FLASH_SIZE_BYTES;
     bool targetSeen = false;
@@ -96,6 +96,9 @@ void setup() {
 #else
     Serial.printf("Flash size set statically: %lu bytes\r\n", (unsigned long)flashSizeBytes);
 #endif
+
+    /* после инициализации возвращаемся в нейтральное состояние */
+    ledOff();
 
     unsigned long startWait = millis();
     while (!Serial.available()) {
