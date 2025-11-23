@@ -15,7 +15,7 @@
 
 #define BUTTON1_Pin 4
 #define LED1_Pin 25
-#define TARGET_RESET_Pin 27
+#define TARGET_RESET_Pin 17   /* перенесли reset на GP17 (pad 19) */
 #define TARGET_PWR_Pin 26
 #define SWDIO_Pin 14
 #define SWCLK_Pin 15
