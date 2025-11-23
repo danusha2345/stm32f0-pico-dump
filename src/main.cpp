@@ -28,6 +28,31 @@ static void ledRed()    { ledSet(32, 0, 0);  }
 static void ledBlue()   { ledSet(0, 0, 32);  }
 static void ledOff()    { ledSet(0, 0, 0);   }
 
+static void swdDiag(void) {
+    swdStatus_t st;
+    uint32_t id = 0;
+
+    targetPowerOn();
+    delay(POWER_ON_DELAY_MS);
+    st = swdInit(&id);
+    Serial.printf("diag init: %u id: %08lx\r\n", st, (unsigned long)id);
+    if (st == swdStatusOk) {
+        st = swdEnableDebugIF();
+        Serial.printf("diag dbgIF: %u\r\n", st);
+    }
+    if (st == swdStatusOk) {
+        st = swdSetAP32BitMode(NULL);
+        Serial.printf("diag ap32: %u\r\n", st);
+    }
+    if (st == swdStatusOk) {
+        st = swdSelectAHBAP();
+        Serial.printf("diag ahb: %u\r\n", st);
+    }
+    targetPowerOff();
+    targetReset();
+    targetRestore();
+}
+
 /* One-shot SWD read with power-cycle; used to probe registers before the main loop */
 static bool tryReadOnce(uint32_t const address, uint32_t* const data) {
     swdStatus_t dbgStatus = swdStatusNone;
@@ -88,6 +113,9 @@ void setup() {
 
     uint32_t flashSizeBytes = FLASH_SIZE_BYTES;
     bool targetSeen = false;
+
+    swdDiag(); /* диагностический проход, чтобы увидеть статус SWD */
+
 #if FLASH_SIZE_AUTODETECT
     uint32_t flashSizeReg = 0u;
     if (tryReadOnce(FLASH_SIZE_REG_ADDR, &flashSizeReg)) {
