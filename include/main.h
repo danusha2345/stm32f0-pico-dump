@@ -25,6 +25,7 @@
 #define NRST_DEBUG_HIGH_MS 40
 #define NRST_DEBUG_LOW_MS 40
 
+#define POWER_ACTIVE_HIGH 1    /* 1: HIGH = power on (default wiring), 0: inverted */
 #define POWER_ON_DELAY_MS 30u    /* стабилизация питания цели перед SWD init */
 #define RESET_RELEASE_MS 3u      /* пауза после поднятия NRST перед SWD init */
 

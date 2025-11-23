@@ -23,9 +23,18 @@ void targetRestore(void) {
 }
 
 void targetPowerOff(void) {
-    digitalWrite(TARGET_PWR_Pin, HIGH); /* inverted: HIGH = power off */
+    /* If POWER_ACTIVE_HIGH==1, HIGH keeps power on; else inverted */
+#if POWER_ACTIVE_HIGH
+    digitalWrite(TARGET_PWR_Pin, LOW);
+#else
+    digitalWrite(TARGET_PWR_Pin, HIGH);
+#endif
 }
 
 void targetPowerOn(void) {
-    digitalWrite(TARGET_PWR_Pin, LOW);  /* inverted: LOW = power on */
+#if POWER_ACTIVE_HIGH
+    digitalWrite(TARGET_PWR_Pin, HIGH);
+#else
+    digitalWrite(TARGET_PWR_Pin, LOW);
+#endif
 }
