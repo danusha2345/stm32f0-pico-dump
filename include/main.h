@@ -20,6 +20,11 @@
 #define SWDIO_Pin 14
 #define SWCLK_Pin 15
 
+/* Debug: generate visible NRST pulses at startup to verify wiring */
+#define NRST_DEBUG_PULSES 3
+#define NRST_DEBUG_HIGH_MS 40
+#define NRST_DEBUG_LOW_MS 40
+
 /* On-board addressable LED (RP2040-Tiny / WS2812) */
 #define NEOPIXEL_PIN        16
 #define NEOPIXEL_COUNT      1

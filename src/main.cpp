@@ -77,6 +77,15 @@ void setup() {
     ledYellow(); /* init */
     delay(150);  /* короткая пауза на инициализации */
 
+#if NRST_DEBUG_PULSES > 0
+    for (int i = 0; i < NRST_DEBUG_PULSES; ++i) {
+        targetRestore();
+        delay(NRST_DEBUG_HIGH_MS);
+        targetReset();
+        delay(NRST_DEBUG_LOW_MS);
+    }
+#endif
+
     uint32_t flashSizeBytes = FLASH_SIZE_BYTES;
     bool targetSeen = false;
 #if FLASH_SIZE_AUTODETECT
