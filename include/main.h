@@ -22,6 +22,15 @@
 
 #define MAX_READ_ATTEMPTS (100u)
 
+/* Flash layout (change to match your target) */
+#define FLASH_SIZE_BYTES (32u * 1024u)   /* default 32 KB for STM32F0x */
+#define FLASH_START_ADDR (0x08000000u)    /* start of flash */
+
+/* Auto-start timeout for the dump after power-up.
+ * 0 -> wait forever for a key on the serial port.
+ * Any other value -> milliseconds to wait, then start automatically. */
+#define START_TIMEOUT_MS (5000u)
+
 /* all times in milliseconds */
 /* minimum wait time between reset deassert and attack */
 /* With my test devices this works as 0. Obermaier's default is 20 */
