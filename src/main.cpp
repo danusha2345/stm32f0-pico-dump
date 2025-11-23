@@ -88,10 +88,9 @@ void setup() {
     swdStatus_t status;
     Serial.begin(115200);
     {
-        unsigned long t0 = millis();
-        while (!Serial && (millis() - t0 < 2000)) {
-            delay(10);
-        }
+        /* Дадим драйверу CDC пару секунд и отправим заголовок после готовности */
+        while (!Serial) { delay(10); }
+        delay(500); /* небольшая пауза чтобы WSL успел переподключить порт */
     }
 
     pixel.begin();
