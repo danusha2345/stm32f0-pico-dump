@@ -22,6 +22,12 @@ static void ledSet(uint8_t r, uint8_t g, uint8_t b) {
     pixel.show();
 }
 
+static void ledYellow() { ledSet(32, 32, 0); }
+static void ledGreen()  { ledSet(0, 32, 0);  }
+static void ledRed()    { ledSet(32, 0, 0);  }
+static void ledBlue()   { ledSet(0, 0, 32);  }
+static void ledOff()    { ledSet(0, 0, 0);   }
+
 /* One-shot SWD read with power-cycle; used to probe registers before the main loop */
 static bool tryReadOnce(uint32_t const address, uint32_t* const data) {
     swdStatus_t dbgStatus = swdStatusNone;
@@ -59,7 +65,7 @@ void setup() {
 
     pixel.begin();
     pixel.setBrightness(NEOPIXEL_BRIGHTNESS);
-    ledSet(0, 0, 0); /* off */
+    ledOff();
 
     pinMode(TARGET_RESET_Pin, OUTPUT);
     pinMode(TARGET_PWR_Pin, OUTPUT);
@@ -68,9 +74,11 @@ void setup() {
 
     targetInit();
     digitalWrite(LED1_Pin, HIGH);
-    ledSet(32, 32, 0); /* yellow - init */
+    ledYellow(); /* init */
+    delay(300);  /* держим жёлтый чуть дольше */
 
     uint32_t flashSizeBytes = FLASH_SIZE_BYTES;
+    bool targetSeen = false;
 #if FLASH_SIZE_AUTODETECT
     uint32_t flashSizeReg = 0u;
     if (tryReadOnce(FLASH_SIZE_REG_ADDR, &flashSizeReg)) {
@@ -78,14 +86,12 @@ void setup() {
         if (sizeKB != 0u) {
             flashSizeBytes = (uint32_t)sizeKB * 1024u;
             Serial.printf("Detected flash size: %u KB\r\n", sizeKB);
-            ledSet(0, 32, 0); /* green - autodetect ok */
+            targetSeen = true;
         } else {
             Serial.println("Flash size autodetect returned 0, fallback to default");
-            ledSet(32, 0, 0); /* red - bad value */
         }
     } else {
         Serial.println("Flash size autodetect failed, using default");
-        ledSet(32, 0, 0); /* red - autodetect failed */
     }
 #else
     Serial.printf("Flash size set statically: %lu bytes\r\n", (unsigned long)flashSizeBytes);
@@ -105,21 +111,29 @@ void setup() {
         Serial.read();
     }
     Serial.println("Starting");
-    ledSet(0, 0, 32); /* blue - dumping */
+    ledBlue(); /* dumping */
 
     uint32_t flashData = 0;
+    bool anyError = false;
     for (uint32_t i = 0; i < flashSizeBytes; i+=4) {
         flashData = 0;
         status = extractFlashData(FLASH_START_ADDR + i, &flashData);
         if (status != swdStatusOk) {
             Serial.printf("Error reading: %d\r\n", status);
-            ledSet(32, 0, 0); /* red - error */
+            anyError = true;
             break;
         }
+        targetSeen = true; /* we got at least one valid word */
         Serial.printf("%08x: %08x\r\n", FLASH_START_ADDR + i, flashData);
     }
     Serial.println("DONE");
-    ledSet(0, 32, 0); /* green - done */
+    if (!targetSeen) {
+        ledBlue(); /* нет цели на SWD */
+    } else if (anyError) {
+        ledRed();
+    } else {
+        ledGreen(); /* всё успешно */
+    }
 }
 
 void loop() {
