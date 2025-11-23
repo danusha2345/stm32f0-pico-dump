@@ -54,7 +54,7 @@ pio run
 #define NEOPIXEL_PIN        16              // адресный LED (WS2812)
 #define NEOPIXEL_COUNT      1
 #define NEOPIXEL_BRIGHTNESS 40
-#define FLASH_SIZE_BYTES   (32u * 1024u)   // базовый fallback объём флеш
+#define FLASH_SIZE_BYTES   (256u * 1024u)  // fallback под STM32F091CC (256 KB)
 #define FLASH_START_ADDR   (0x08000000u)   // базовый адрес флеш
 #define FLASH_SIZE_AUTODETECT (1u)         // 1 = попытка прочитать регистр размера
 #define FLASH_SIZE_REG_ADDR  (0x1FFFF7CCu) // адрес регистра размера (STM32F0)
