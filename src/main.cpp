@@ -87,6 +87,12 @@ static bool tryReadOnce(uint32_t const address, uint32_t* const data) {
 void setup() {
     swdStatus_t status;
     Serial.begin(115200);
+    {
+        unsigned long t0 = millis();
+        while (!Serial && (millis() - t0 < 2000)) {
+            delay(10);
+        }
+    }
 
     pixel.begin();
     pixel.setBrightness(NEOPIXEL_BRIGHTNESS);
