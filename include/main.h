@@ -20,6 +20,11 @@
 #define SWDIO_Pin 14
 #define SWCLK_Pin 15
 
+/* On-board addressable LED (RP2040-Tiny / WS2812) */
+#define NEOPIXEL_PIN        16
+#define NEOPIXEL_COUNT      1
+#define NEOPIXEL_BRIGHTNESS 40  /* 0-255 */
+
 #define MAX_READ_ATTEMPTS (100u)
 
 /* Flash layout (change to match your target) */
